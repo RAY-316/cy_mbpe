@@ -25,7 +25,6 @@ class State:
     code_list: List[int]  # 存储所有根节点的编码值
     code_indices: List[int]  # 存储所有根节点的位置
     joined_list: List[int]  # 存储完整的编码序列
-#  28*28   2*2   196 ->  root  non_root
 
 class BaseTokenizer:
     """分词器基类"""
