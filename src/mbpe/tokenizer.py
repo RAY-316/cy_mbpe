@@ -25,7 +25,7 @@ class State:
     code_list: List[int]  # 存储所有根节点的编码值
     code_indices: List[int]  # 存储所有根节点的位置
     joined_list: List[int]  # 存储完整的编码序列
-
+#  28*28   2*2   196 ->  root  non_root
 
 class BaseTokenizer:
     """分词器基类"""
@@ -78,6 +78,7 @@ class Tokenizer(BaseTokenizer):
         # 根据最大形状生成所有可能的形状组合
         # [[1, 2, 2], [1, 1, 2], [1, 1, 1]]
         shapes = find_tuple_shapes(max_shape)
+        # shapes = [[1,1,1]]
         print('找到的形状组合:{}'.format(shapes))
         
         # 初始化状态字典，用于存储所有图片的状态
@@ -187,8 +188,6 @@ class Tokenizer(BaseTokenizer):
         tuple_list = tensor_to_tuple(unshuffled_tensor, state.shape)[0]
         # 创建编码映射，初始值为-1， tensor.size(0) = 196，也就是长度为196的list
         code_mapping = torch.full((tensor.size(0),), -1, dtype=torch.long)
-
-        # print(self.inverse_vocab)
         # raise
 
         # 使用根词汇表更新编码映射
@@ -203,6 +202,7 @@ class Tokenizer(BaseTokenizer):
                     if last_shape:
                         code_mapping[i] = len(self.vocab)
                         update_vocab(self.vocab, self.inverse_vocab, tup, len(self.vocab))
+        
 
         # 分离根节点和非根节点的索引
         # 根节点是已经确定位置和值的节点
@@ -212,7 +212,9 @@ class Tokenizer(BaseTokenizer):
         root_codes = code_mapping[root_indices].tolist()
 
         # 更新状态
+        # tensor torch.Size([196, 1, 2, 2])
         state.tensor = tensor[non_root_indices].unsqueeze(0)
+        # state.tensor torch.Size([1, 82, 1, 2, 2])
         state.code_list.extend(list(map(str, root_codes)))
 
         # 检查是否有历史索引记录
@@ -309,6 +311,20 @@ class Tokenizer(BaseTokenizer):
                 idx = code
                 
             # 更新所有状态的合并列表
+            """
+            # 状态1 的 joined_list: ['a', 'b', 'c', 'a', 'b']
+            # 状态2 的 joined_list: ['d', 'a', 'b', 'e']
+
+            # 如果 pair=('a', 'b'), idx='ab'
+            # 合并后：
+            # 状态1: ['ab', 'c', 'ab']
+            # 状态2: ['d', 'ab', 'e']
+
+            # 下一轮频率统计中：
+            # ('a', 'b') 不再存在
+            # 而是统计新的对，如 ('ab', 'c') 或 ('d', 'ab')
+            
+            """
             for batch_states in states.values():
                 if isinstance(batch_states, list):
                     for state in batch_states:

@@ -93,13 +93,12 @@ class FrequencyCounter:
 
         # After updating the global frequency table, update root_vocabulary
         self.update_root_vocabulary(vocab, inverse_vocab)
-
         return local_freq_table
 
     def update_merge_freq_tables(self, mixed_list):
         """Update merge frequency tables."""
-        if len(self.global_freq_table) > 0:
-            self.global_freq_table = defaultdict(lambda: {'global_count': 0, 'global_frequency': 0.0})
+        # if len(self.global_freq_table) > 0:
+        #     self.global_freq_table = defaultdict(lambda: {'global_count': 0, 'global_frequency': 0.0})
         local_freq_table = self.initialize_local_freq_table()
         local_freq_table = self.count_frequencies_in_list(mixed_list, local_freq_table)
         local_freq_table = self.calculate_local_frequencies(local_freq_table, len(mixed_list))
